@@ -36,11 +36,7 @@ struct RepoRow: View {
 struct RepoRow_Previews: PreviewProvider {
     static var previews: some View {
         
-        RepoRow(repo: Repo(
-            id: 1,
-            name: "Test Repo1",
-            owner: User(name:"Test User1")
-        ))
+        RepoRow(repo: .mock1)
         
     }
 }
