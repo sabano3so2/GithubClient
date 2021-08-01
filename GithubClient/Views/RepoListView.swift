@@ -8,23 +8,37 @@
 import SwiftUI
 
 struct RepoListView: View {
-    private let mockRepos: [Repo] = [
-        .mock1, .mock2, .mock3, .mock4, .mock5
-    ]
+    @State private var mockRepos: [Repo] = []
     
     var body: some View {
 
         NavigationView {
-            List(mockRepos) { repo in
-                NavigationLink(
-                    destination: RepoDetailView(repo: repo)) {
-                    RepoRow(repo: repo)
+            // 読み込む前、データ配列mockRepos が殻ならプログレス表示
+            if mockRepos.isEmpty {
+                ProgressView("loading ... ")
+            } else {
+                List(mockRepos) { repo in
+                    NavigationLink(
+                        destination: RepoDetailView(repo: repo)) {
+                        RepoRow(repo: repo)
+                    }
+                    .navigationTitle("Repositories")    // タイトル
                 }
-                .navigationTitle("Repositories")    // タイトル
             }
         }
+        .onAppear{
+            loadRepos()
+        }
     }
-    
+    private func loadRepos() {
+        // 1秒後にモックデータを読み込む
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            mockRepos = [
+                .mock1, .mock2, .mock3, .mock4, .mock5
+            ]
+        }
+    }
+
 }
 
 struct RepoListView_Previews: PreviewProvider {
