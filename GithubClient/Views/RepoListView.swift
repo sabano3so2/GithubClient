@@ -3,21 +3,48 @@
 //  GithubClient
 //
 //  Created by Masayuki WATANABE on 2021/07/31.
-// ]
+// ２−１ Combine
 
 import SwiftUI
+import Combine
+
+class ReposLoader : ObservableObject {
+    @Published private(set) var repos = [Repo]()
+    
+    private var cancellables = Set<AnyCancellable>()
+    
+    func call() {
+        let reposPublisher = Future<[Repo], Error> { promise in
+            DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {
+                promise(.success([
+                    .mock1, .mock2, .mock3, .mock4, .mock5
+                ]))
+            }
+        }
+        reposPublisher
+            .receive(on: DispatchQueue.main)        // チャレンジ
+            .sink(receiveCompletion: { completion in
+                print("Finished: \(completion)")
+            }, receiveValue: { [weak self] repos in
+                self?.repos = repos
+            }
+            ).store(in: &cancellables)
+    }
+}
 
 struct RepoListView: View {
-    @State private var mockRepos: [Repo] = []
+    @StateObject private var reposLoader = ReposLoader()
     
+    private var cancellables = Set<AnyCancellable>()
+        
     var body: some View {
 
         NavigationView {
             // 読み込む前、データ配列mockRepos が殻ならプログレス表示
-            if mockRepos.isEmpty {
+            if reposLoader.repos.isEmpty {
                 ProgressView("loading ... ")
             } else {
-                List(mockRepos) { repo in
+                List(reposLoader.repos) { repo in
                     NavigationLink(
                         destination: RepoDetailView(repo: repo)) {
                         RepoRow(repo: repo)
@@ -27,18 +54,9 @@ struct RepoListView: View {
             }
         }
         .onAppear{
-            loadRepos()
+            reposLoader.call()
         }
     }
-    private func loadRepos() {
-        // 1秒後にモックデータを読み込む
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            mockRepos = [
-                .mock1, .mock2, .mock3, .mock4, .mock5
-            ]
-        }
-    }
-
 }
 
 struct RepoListView_Previews: PreviewProvider {
