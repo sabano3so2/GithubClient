@@ -1,46 +1,46 @@
-//
-//  ContentView.swift
-//  GithubClient
-//
-//  Created by Masayuki WATANABE on 2021/07/31.
-// ２−2 URLSessiton 8/5 MaSa
+// 2-3 error handle
 
 import SwiftUI
 import Combine
 
-class ReposLoader : ObservableObject {
-    @Published private(set) var repos = [Repo]()
-    
+class ReposLoader: ObservableObject {
+    @Published private(set) var repos: Stateful<[Repo]> = .idle
+
     private var cancellables = Set<AnyCancellable>()
-    
+
     func call() {
-        
         let url = URL(string: "https://api.github.com/orgs/mixigroup/repos")!
 
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "GET"
         urlRequest.allHTTPHeaderFields = [
-            "Accept":
-            "application/vnd.github.v3+json"
+            "Accept": "application/vnd.github.v3+json"
         ]
 
-        let reposPublisher = URLSession.shared.dataTaskPublisher(for: urlRequest)   //URLSession がシングルトン
+        let reposPublisher = URLSession.shared.dataTaskPublisher(for: urlRequest)
             .tryMap() { element -> Data in
-                guard let httpResponse = element.response as? HTTPURLResponse,
-                      httpResponse.statusCode == 200 else {
+//                guard let httpResponse = element.response as? HTTPURLResponse,
+//                      httpResponse.statusCode == 200 else {
                     throw URLError(.badServerResponse)
-                }
-                return element.data
-                
+//                }
+//                return element.data
             }
             .decode(type: [Repo].self, decoder: JSONDecoder())
-        
+
         reposPublisher
-            .receive(on: DispatchQueue.main)        // チャレンジ
-            .sink(receiveCompletion: { completion in
-                print("Finished: \(completion)")
+            .receive(on: DispatchQueue.main)
+            .handleEvents(receiveSubscription: { [weak self] _ in
+                self?.repos = .loading
+            })
+            .sink(receiveCompletion: { [weak self] completion in
+                switch completion {
+                case .failure(let error):
+                    print("Error: \(error)")
+                    self?.repos = .failed(error)
+                case .finished: print("Finished")
+                }
             }, receiveValue: { [weak self] repos in
-                self?.repos = repos
+                self?.repos = .loaded(repos)
             }
             ).store(in: &cancellables)
     }
@@ -48,26 +48,50 @@ class ReposLoader : ObservableObject {
 
 struct RepoListView: View {
     @StateObject private var reposLoader = ReposLoader()
-    
-    private var cancellables = Set<AnyCancellable>()
-        
-    var body: some View {
 
+    var body: some View {
         NavigationView {
-            // 読み込む前、データ配列mockRepos が殻ならプログレス表示
-            if reposLoader.repos.isEmpty {
-                ProgressView("loading ... ")
-            } else {
-                List(reposLoader.repos) { repo in
-                    NavigationLink(
-                        destination: RepoDetailView(repo: repo)) {
-                        RepoRow(repo: repo)
+            Group {
+                switch reposLoader.repos {
+                case .idle, .loading:
+                    ProgressView("loading...")
+                case let .loaded(repos):
+                    if repos.isEmpty {
+                        Text("No repositories")
+                            .fontWeight(.bold)
+                    } else {
+                            List(repos) { repo in
+                                NavigationLink(
+                                    destination: RepoDetailView(repo: repo)) {
+                                    RepoRow(repo: repo)
+                                }
+                            }
                     }
-                    .navigationTitle("Repositories")    // タイトル
+                case .failed:
+                    VStack {
+                        Group {
+                            Image("GitHubMark")
+                            Text("Failed to load repositories")
+                                .padding(.top, 4)
+                        }
+                        .foregroundColor(.black)
+                        .opacity(0.4)
+                        Button(
+                            action: {
+                                reposLoader.call()
+                            },
+                            label: {
+                                Text("Retry")
+                                    .fontWeight(.bold)
+                            }
+                        )
+                        .padding(.top, 8)
+                    }
                 }
             }
+            .navigationTitle("Repositories")
         }
-        .onAppear{
+        .onAppear {
             reposLoader.call()
         }
     }
@@ -78,7 +102,3 @@ struct RepoListView_Previews: PreviewProvider {
         RepoListView()
     }
 }
-    
-
-
-

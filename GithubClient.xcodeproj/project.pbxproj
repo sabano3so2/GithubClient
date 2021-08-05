@@ -17,6 +17,7 @@
 		C54EEF7026B6363C003D6D8D /* RepoDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C54EEF6F26B6363C003D6D8D /* RepoDetailView.swift */; };
 		C54EEF7726B64F1E003D6D8D /* Repo+Mock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C54EEF7626B64F1E003D6D8D /* Repo+Mock.swift */; };
 		C54EEF7A26B64F31003D6D8D /* User+Mock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C54EEF7926B64F31003D6D8D /* User+Mock.swift */; };
+		C574969126BC3ECD00515574 /* Stateful.swift in Sources */ = {isa = PBXBuildFile; fileRef = C574969026BC3ECD00515574 /* Stateful.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 		C54EEF6F26B6363C003D6D8D /* RepoDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepoDetailView.swift; sourceTree = "<group>"; };
 		C54EEF7626B64F1E003D6D8D /* Repo+Mock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Repo+Mock.swift"; sourceTree = "<group>"; };
 		C54EEF7926B64F31003D6D8D /* User+Mock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "User+Mock.swift"; sourceTree = "<group>"; };
+		C574969026BC3ECD00515574 /* Stateful.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stateful.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +66,7 @@
 		C52D48F426B541B600B6A6F2 /* GithubClient */ = {
 			isa = PBXGroup;
 			children = (
+				C574968F26BC3E9E00515574 /* Utilities */,
 				C52D48F526B541B700B6A6F2 /* GithubClientApp.swift */,
 				C54EEF7426B6372F003D6D8D /* Views */,
 				C52D490B26B5944100B6A6F2 /* Models */,
@@ -100,6 +103,14 @@
 				C54EEF6F26B6363C003D6D8D /* RepoDetailView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		C574968F26BC3E9E00515574 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				C574969026BC3ECD00515574 /* Stateful.swift */,
+			);
+			path = Utilities;
 			sourceTree = "<group>";
 		};
 		C5ABB0B826B65F5900B41902 /* Mocks */ = {
@@ -184,6 +195,7 @@
 				C54EEF6D26B5B84B003D6D8D /* RepoRow.swift in Sources */,
 				C52D490926B5942500B6A6F2 /* User.swift in Sources */,
 				C52D490626B593FA00B6A6F2 /* Repo.swift in Sources */,
+				C574969126BC3ECD00515574 /* Stateful.swift in Sources */,
 				C54EEF7026B6363C003D6D8D /* RepoDetailView.swift in Sources */,
 				C52D48F826B541B700B6A6F2 /* RepoListView.swift in Sources */,
 				C54EEF7A26B64F31003D6D8D /* User+Mock.swift in Sources */,
