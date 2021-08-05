@@ -18,10 +18,13 @@ struct RepoDetailView: View {
                     }
                     Text(repo.name)
                         .font(.body)
-                        .fontWeight(.semibold)
-                        .padding(.top, 8)
-                    Text(repo.description)
-                        .padding(.top, 8)
+                        .fontWeight(.bold)
+  
+                    if let description = repo.description {
+                        Text(description)
+                            .padding(.top, 4)
+                    }
+
                     HStack {
                         Image(systemName: "star")
                         Text("\(repo.stargazersCount)stars")
@@ -30,14 +33,13 @@ struct RepoDetailView: View {
                     .padding(.top, 8)
                     Spacer()
                 }
-                .padding()
                 Spacer()
             }
-            .navigationBarTitleDisplayMode(.inline)  //NavigationLink の仕上げのModfier ★
+            .padding(8)
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
-
 
 struct RepoDetailView_Previews: PreviewProvider {
     static var previews: some View {

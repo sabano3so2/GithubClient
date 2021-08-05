@@ -3,7 +3,7 @@
 //  GithubClient
 //
 //  Created by Masayuki WATANABE on 2021/07/31.
-// ２−１ Combine
+// ２−2 URLSessiton 8/5 MaSa
 
 import SwiftUI
 import Combine
@@ -14,13 +14,27 @@ class ReposLoader : ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     func call() {
-        let reposPublisher = Future<[Repo], Error> { promise in
-            DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {
-                promise(.success([
-                    .mock1, .mock2, .mock3, .mock4, .mock5
-                ]))
+        
+        let url = URL(string: "https://api.github.com/orgs/mixigroup/repos")!
+
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = "GET"
+        urlRequest.allHTTPHeaderFields = [
+            "Accept":
+            "application/vnd.github.v3+json"
+        ]
+
+        let reposPublisher = URLSession.shared.dataTaskPublisher(for: urlRequest)   //URLSession がシングルトン
+            .tryMap() { element -> Data in
+                guard let httpResponse = element.response as? HTTPURLResponse,
+                      httpResponse.statusCode == 200 else {
+                    throw URLError(.badServerResponse)
+                }
+                return element.data
+                
             }
-        }
+            .decode(type: [Repo].self, decoder: JSONDecoder())
+        
         reposPublisher
             .receive(on: DispatchQueue.main)        // チャレンジ
             .sink(receiveCompletion: { completion in
