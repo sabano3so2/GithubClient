@@ -1,34 +1,32 @@
 // 2-3 error handle
 
 import SwiftUI
-import Combine
+import Combine  //非同期処理
 
 class ReposLoader: ObservableObject {
-    @Published private(set) var repos: Stateful<[Repo]> = .idle
-
-    private var cancellables = Set<AnyCancellable>()
+    @Published private(set) var repos: Stateful<[Repo]> = .idle  // パブリッシャー
+    private var cancellables = Set<AnyCancellable>()        // 任意のタイミングでキャンセルできるようにするため
 
     func call() {
-        let url = URL(string: "https://api.github.com/orgs/mixigroup/repos")!
+        let url = URL(string: "https://api.github.com/orgs/mixigroup/repos")!  // 対象のURL
 
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "GET"
         urlRequest.allHTTPHeaderFields = [
             "Accept": "application/vnd.github.v3+json"
-        ]
-
+        ]   // URL リクエスト
         let reposPublisher = URLSession.shared.dataTaskPublisher(for: urlRequest)
-            .tryMap() { element -> Data in
-//                guard let httpResponse = element.response as? HTTPURLResponse,
-//                      httpResponse.statusCode == 200 else {
+            .tryMap() { element -> Data in  // tryMap パブリッシャーに生えたオペレータ
+                guard let httpResponse = element.response as? HTTPURLResponse,
+                      httpResponse.statusCode == 200 else {
                     throw URLError(.badServerResponse)
-//                }
-//                return element.data
+                }
+                return element.data  // ステータスが200以外であればデータを返す（戻す）
             }
-            .decode(type: [Repo].self, decoder: JSONDecoder())
+            .decode(type: [Repo].self, decoder: JSONDecoder())   // decade
 
         reposPublisher
-            .receive(on: DispatchQueue.main)
+            .receive(on: DispatchQueue.main)   // ２−１チャレンジ　データ更新のスレッド　画面更新とは別のスレッド
             .handleEvents(receiveSubscription: { [weak self] _ in
                 self?.repos = .loading
             })
@@ -44,10 +42,10 @@ class ReposLoader: ObservableObject {
             }
             ).store(in: &cancellables)
     }
-}
+}   // RepoLoader
 
 struct RepoListView: View {
-    @StateObject private var reposLoader = ReposLoader()
+    @StateObject private var reposLoader = ReposLoader()  // class ReposLoader をpropaty として初期化
 
     var body: some View {
         NavigationView {
